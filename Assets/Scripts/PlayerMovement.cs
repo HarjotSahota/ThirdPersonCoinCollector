@@ -16,6 +16,7 @@ public class NewMonoBehaviourScript : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        Cursor.lockState = CursorLockMode.Locked;       // lock the mouse to prevent it moving freely ouside the game
         Cursor.visible = false;
     }
 
