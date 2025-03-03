@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class NewMonoBehaviourScript : MonoBehaviour
 {
@@ -9,8 +10,12 @@ public class NewMonoBehaviourScript : MonoBehaviour
     public float lookXLimit = 45f;
 
     private Rigidbody rb;
-    private bool isGrounded;
     private float rotationX = 0;
+    private int jumpCount = 0;
+
+    public float dashSpeed = 1000f;  
+    public float dashDuration = 3f;
+    public bool isDashing = false;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -23,7 +28,10 @@ public class NewMonoBehaviourScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        MovePlayer();
+        if (!isDashing) 
+        {
+            MovePlayer();
+        }
         RotatePlayer();
     }
 
@@ -36,10 +44,14 @@ public class NewMonoBehaviourScript : MonoBehaviour
         rb.linearVelocity = new Vector3(moveDirection.x * moveSpeed, rb.linearVelocity.y, moveDirection.z * moveSpeed);
 
         // Jumping logic
-        if (Input.GetButtonDown("Jump") && isGrounded)
-        {
+        if (Input.GetButtonDown("Jump") && jumpCount < 2){
             rb.AddForce(Vector3.up * jumpPower, ForceMode.Impulse);
-            isGrounded = false;
+            jumpCount++; 
+        }
+
+        // Dashing logic
+        if (Input.GetKeyDown(KeyCode.F) && !isDashing){
+            StartCoroutine(Dash(moveDirection));
         }
     }
 
@@ -56,8 +68,21 @@ public class NewMonoBehaviourScript : MonoBehaviour
     void OnCollisionEnter(Collision collision) {
         if (collision.gameObject.CompareTag("Ground"))
         {
-            isGrounded = true;
+            jumpCount = 0;
         }
+    }
+
+    IEnumerator Dash(Vector3 moveDirection){
+        float startTime = Time.time;
+        isDashing = true; 
+        Vector3 dashVelocity = moveDirection * dashSpeed;
+
+        while (Time.time < startTime + dashDuration){
+            rb.linearVelocity = new Vector3(dashVelocity.x, rb.linearVelocity.y * 0.8f, dashVelocity.z); 
+            yield return null;
+        }
+
+        isDashing = false;
     }
 
 }
